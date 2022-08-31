@@ -1,0 +1,4 @@
+bac-vms-1.0.0-0
+	- Complied new version of Asterisk 16.26.1
+        - Packaged new ajenti with version 2.2.0 which is aligned with respect to RH 8.5 and python 3.10 modules
+

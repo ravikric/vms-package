@@ -1,0 +1,122 @@
+#!/bin/bash
+
+
+echo " Enter the directory you wish to install : "
+read -r
+installPath=$REPLY
+
+echo " ==== installed path will be $installPath "
+
+
+export VMS_HOME=$installPath
+echo $VMS_HOME
+
+
+
+
+
+
+
+echo -----------------------------------------------
+echo Installing asterisk dependencies
+echo ------------------------------------------------
+
+if [ ! -d $VMS_HOME ]; then
+    mkdir -p $VMS_HOME
+fi
+if [ ! -d $VMS_HOME/var/lock/subsys ]; then
+    mkdir -p $VMS_HOME/var/lock/subsys
+fi
+
+if [ ! -d $VMS_HOME/var/log ]; then
+    mkdir -p $VMS_HOME/var/log
+fi
+if [ ! -d $VMS_HOME/var/run ]; then
+    mkdir -p $VMS_HOME/var/run
+fi
+if [ -f $VMS_HOME/etc/audiobridge/audiobridge.db ]; then
+       cp $VMS_HOME/etc/audiobridge/audiobridge.db $VMS_HOME/
+fi
+if [ -f $VMS_HOME/etc/audiobridge/config.json ]; then
+       cp $VMS_HOME/etc/audiobridge/config.json $VMS_HOME/
+fi
+if [ -f $VMS_HOME/asterisk/asterisk/sip_additional.conf ]; then
+       cp $VMS_HOME/asterisk/asterisk/sip_additional.conf $VMS_HOME/
+fi
+if [ -f $VMS_HOME/asterisk/asterisk/iax_additional.conf ]; then
+       cp $VMS_HOME/asterisk/asterisk/iax_additional.conf $VMS_HOME/
+fi
+if [ -f $VMS_HOME/asterisk/asterisk/extensions_vms.conf ]; then
+       cp $VMS_HOME/asterisk/asterisk/extensions_vms.conf $VMS_HOME/
+fi
+if [ -f $VMS_HOME/asterisk/asterisk/manager_unify.conf ]; then
+       cp $VMS_HOME/asterisk/asterisk/manager_unify.conf $VMS_HOME/
+fi
+if [ -f $VMS_HOME/etc/ajenti/config.json ]; then
+       cp $VMS_HOME/etc/ajenti/config.json $VMS_HOME/ajenticonfig.json
+fi
+if [ -f $VMS_HOME/asterisk/asterisk/globals_custom.conf ]; then
+       cp $VMS_HOME/asterisk/asterisk/globals_custom.conf $VMS_HOME/
+fi
+if [ -f $VMS_HOME/asterisk/asterisk/logger.conf ]; then
+       cp $VMS_HOME/asterisk/asterisk/logger.conf $VMS_HOME/
+fi
+
+cd ./packages
+rm -rf $VMS_HOME/asterisk/sbin
+rm -rf $VMS_HOME/asterisk/lib
+for file in *.tgz
+do
+
+    echo ------------------------------------------------
+    echo installing package $file
+    echo ------------------------------------------------
+    tar -zxf $file -C $VMS_HOME
+    for fls in `find $VMS_HOME -type f \( ! -iname *.pyc \) -exec grep -nrl VMS_HOME {} \; -print`
+    do
+      echo $fls
+      sed -i "s|VMS_HOME|$VMS_HOME|g" $fls
+    done
+    if [ -f $VMS_HOME/install/doinst.sh ]; then
+       sh $VMS_HOME/install/doinst.sh
+    fi
+    if [ -f $VMS_HOME/install/predoinst.sh ]; then
+       sh $VMS_HOME/install/predoinst.sh
+    fi
+    echo -----------------------------------------------
+    echo package $file finished installing
+    echo ------------------------------------------------
+    rm -rf $VMS_HOME/install
+done
+
+if [ -f $VMS_HOME/audiobridge.db ]; then
+       mv $VMS_HOME/audiobridge.db $VMS_HOME/etc/audiobridge/
+fi
+if [ -f $VMS_HOME/config.json ]; then
+       mv $VMS_HOME/config.json $VMS_HOME/etc/audiobridge/
+fi
+if [ -f $VMS_HOME/sip_additional.conf ]; then
+       mv $VMS_HOME/sip_additional.conf $VMS_HOME/asterisk/asterisk/
+fi
+if [ -f $VMS_HOME/iax_additional.conf ]; then
+       mv $VMS_HOME/iax_additional.conf $VMS_HOME/asterisk/asterisk/
+fi
+if [ -f $VMS_HOME/manager_unify.conf ]; then
+       mv $VMS_HOME/manager_unify.conf $VMS_HOME/asterisk/asterisk/
+fi
+if [ -f $VMS_HOME/extensions_vms.conf ]; then
+       mv $VMS_HOME/extensions_vms.conf $VMS_HOME/asterisk/asterisk/
+fi
+if [ -f $VMS_HOME/globals_custom.conf ]; then
+       mv $VMS_HOME/globals_custom.conf $VMS_HOME/asterisk/asterisk/
+fi
+if [ -f $VMS_HOME/ajenticonfig.json ]; then
+       mv $VMS_HOME/ajenticonfig.json $VMS_HOME/etc/ajenti/config.json
+fi
+if [ -f $VMS_HOME/logger.conf ]; then
+       mv $VMS_HOME/logger.conf $VMS_HOME/asterisk/asterisk/
+fi
+
+echo
+
+
